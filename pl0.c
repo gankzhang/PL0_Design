@@ -45,12 +45,14 @@ void getch(void)
 		} // while
 		printf("\n");
 		line[++ll] = ' ';
+		// 将每一行最后的'\n'换为' ', line[0] 不放字符，line[ll] 放空格
 	}
 	ch = line[++cc];
 } // getch
 
 //////////////////////////////////////////////////////////////////////
 // gets a symbol from input stream.
+//词法分析
 void getsym(void)
 {
 	int i, k;
@@ -61,22 +63,23 @@ void getsym(void)
 
 	if (isalpha(ch))
 	{ // symbol is a reserved word or an identifier.
-		k = 0;
+		k = 0;//标识符长度
 		do
 		{
 			if (k < MAXIDLEN)
-				a[k++] = ch;
+				a[k++] = ch;//标识符最大长度，超出时后面的部分丢失
 			getch();
 		}
 		while (isalpha(ch) || isdigit(ch));
 		a[k] = 0;
-		strcpy(id, a);//
+		strcpy(id, a);
 		word[0] = id;
 		i = NRW;
         
-		while (strcmp(id, word[i--]));
-		if (++i)
-			sym = wsym[i]; // symbol is a reserved word
+		while (strcmp(id, word[i--]));//在word标识符集中查找id
+		i++;
+		if (i)
+			sym = wsym[i]; // symbol is a reserved word 
 		else
 			sym = SYM_IDENTIFIER;   // symbol is an identifier
 	}
@@ -100,7 +103,7 @@ void getsym(void)
 		getch();
 		if (ch == '=')
 		{
-			sym = SYM_EQU; // :=
+			sym = SYM_EQU; // ==
 			getch();
 		}
 		else
@@ -263,8 +266,9 @@ void getsym(void)
 } // getsym
 
 //////////////////////////////////////////////////////////////////////
-// generates (assembles) an instruction.
-void gen(int x, int y, int z)  //生成code中的
+// generates (assembles) an instruction. 
+//生成code中的指令，x为操作码，y为嵌套层次，z为地址
+void gen(int x, int y, int z)  
 {
 	if (cx > CXMAX)
 	{
@@ -278,6 +282,7 @@ void gen(int x, int y, int z)  //生成code中的
 
 //////////////////////////////////////////////////////////////////////
 // tests if error occurs and skips all symbols that do not belongs to s1 or s2.
+//检验sym(全局变量)是否在s1(符号集)中，若不在用s2补救 
 void test(symset s1, symset s2, int n)
 {
 	symset s;
@@ -296,6 +301,7 @@ void test(symset s1, symset s2, int n)
 int dx;  // data allocation index
 int id_redundancy;
 // enter object(constant, variable or procedre) into table.
+// 向table中添加id，及其类型信息等
 void enter(int kind)
 {
 	mask* mk;
@@ -335,6 +341,7 @@ void enter(int kind)
 
 //////////////////////////////////////////////////////////////////////
 // locates identifier in symbol table.
+//在table中定位一个i
 int position(char* id)
 {
 	int i;
@@ -345,6 +352,7 @@ int position(char* id)
 } // position
 
 //////////////////////////////////////////////////////////////////////
+//常数声明，如果不接id则报错
 void constdeclaration()
 {
 	if (sym == SYM_IDENTIFIER)
@@ -374,6 +382,7 @@ void constdeclaration()
 } // constdeclaration
 
 //////////////////////////////////////////////////////////////////////
+//变量声明，数组及其维度信息。
 void vardeclaration(void)
 {   int dim;
     int i;
